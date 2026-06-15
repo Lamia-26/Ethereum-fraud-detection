@@ -10,7 +10,7 @@ SHELL        := /bin/sh
 PYTHON       := uv run python
 RUN          := uv run
 VENV_DIR     := .venv
-PYTHONPATH   ?= .
+PYTHONPATH   ?= src
 export PYTHONPATH
 API_HOST     ?= 127.0.0.1
 API_PORT     ?= 8000
@@ -105,19 +105,19 @@ data: ## Verifie la presence du dataset dans data/
 		|| { echo "$(RED)[ERREUR] data/transaction_dataset.csv introuvable$(RESET)"; exit 1; }
 
 train: ## Entraine la baseline -> models/model.joblib (C=.. MAX_ITER=..)
-	# TODO (S5) : $(PYTHON) -m src.train --c $(C) --max-iter $(MAX_ITER)
+	# TODO (S5) : $(PYTHON) -m ethereum_fraud.train --c $(C) --max-iter $(MAX_ITER)
 
 train-models: ## Compare RF / XGBoost / LightGBM (GridSearchCV) + SHAP (CV=.. SCORING=..)
-	# TODO (S7) : $(PYTHON) -m src.train_models --cv $(CV) --scoring $(SCORING)
+	# TODO (S7) : $(PYTHON) -m ethereum_fraud.train_models --cv $(CV) --scoring $(SCORING)
 
 train-optuna: ## Optimise RF / XGBoost / LightGBM avec Optuna (N_TRIALS=.. CV=..)
-	# TODO (S6) : $(PYTHON) -m src.train_optuna --n-trials $(N_TRIALS) --cv $(CV)
+	# TODO (S6) : $(PYTHON) -m ethereum_fraud.train_optuna --n-trials $(N_TRIALS) --cv $(CV)
 
 mlflow: ## Demarre le serveur MLflow (docker compose)
 	# TODO (S5) : docker compose -f docker-compose.yml up -d mlflow
 
 api: ## Lance l'API FastAPI en rechargement auto (voir API_HOST/API_PORT)
-	# TODO (S12) : $(RUN) uvicorn src.api:app --reload --host $(API_HOST) --port $(API_PORT)
+	# TODO (S12) : $(RUN) uvicorn ethereum_fraud.api:app --reload --host $(API_HOST) --port $(API_PORT)
 
 frontend: ## Lance le frontend Streamlit (voir FRONTEND_PORT, API_URL)
 	# TODO (S14bis) : $(RUN) streamlit run frontend/app.py --server.port $(FRONTEND_PORT)
@@ -145,13 +145,13 @@ docker-down: ## Arrete et supprime les conteneurs (conserve les volumes)
 # ==============================================================================
 
 lint: ## Verifie le style (ruff)
-	# TODO : $(RUN) ruff check src
+	# TODO : $(RUN) ruff check src/ethereum_fraud
 
 format: ## Formate le code (ruff)
-	# TODO : $(RUN) ruff format src
+	# TODO : $(RUN) ruff format src/ethereum_fraud
 
 type: ## Verifie les types (mypy)
-	# TODO : $(RUN) mypy src
+	# TODO : $(RUN) mypy src/ethereum_fraud
 
 test: ## Lance les tests (pytest)
 	# TODO : $(RUN) pytest
