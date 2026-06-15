@@ -1,0 +1,39 @@
+# Environnement Python
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Artefacts ML (trop lourds / regenerables)
+models/
+mlruns/
+mlartifacts/
+*.joblib
+*.pkl
+*.pt
+*.onnx
+optuna.db
+
+# Variables d'environnement
+.env
+.env.*
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Logs
+*.log
+logs/
