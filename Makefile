@@ -96,7 +96,7 @@ doctor: check-uv check-venv ## Diagnostique l'environnement de travail
 
 
 # ==============================================================================
-# Pipeline ML  [A COMPLETER]
+# Pipeline ML  
 # ==============================================================================
 
 data: ## Verifie la presence du dataset dans data/
@@ -105,7 +105,7 @@ data: ## Verifie la presence du dataset dans data/
 		|| { echo "$(RED)[ERREUR] data/transaction_dataset.csv introuvable$(RESET)"; exit 1; }
 
 train: ## Entraine la baseline -> models/model.joblib (C=.. MAX_ITER=..)
-	# TODO (S5) : $(PYTHON) -m ethereum_fraud.train --c $(C) --max-iter $(MAX_ITER)
+	$(PYTHON) -m ethereum_fraud.train --c $(C) --max-iter $(MAX_ITER)
 
 train-models: ## Compare RF / XGBoost / LightGBM (GridSearchCV) + SHAP (CV=.. SCORING=..)
 	# TODO (S7) : $(PYTHON) -m ethereum_fraud.train_models --cv $(CV) --scoring $(SCORING)
