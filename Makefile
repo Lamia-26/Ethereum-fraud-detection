@@ -106,22 +106,22 @@ data: ## Verifie la presence du dataset dans data/
 		|| { echo "$(RED)[ERREUR] data/transaction_dataset.csv introuvable$(RESET)"; exit 1; }
 
 train: ## Entraine la baseline -> models/model.joblib (C=.. MAX_ITER=..)
-	$(PYTHON) -m mlproject.train --c $(C) --max-iter $(MAX_ITER)
+	# TODO (S5) : $(PYTHON) -m mlproject.train --c $(C) --max-iter $(MAX_ITER)
 
 train-models: ## Compare RF / XGBoost / LightGBM (GridSearchCV) + SHAP (CV=.. SCORING=..)
-	$(PYTHON) -m mlproject.train_models --cv $(CV) --scoring $(SCORING)
+	# TODO (S7) : $(PYTHON) -m mlproject.train_models --cv $(CV) --scoring $(SCORING)
 
 train-optuna: ## Optimise RF / XGBoost / LightGBM avec Optuna (N_TRIALS=.. CV=..)
-	$(PYTHON) -m mlproject.train_optuna --n-trials $(N_TRIALS) --cv $(CV)
+	# TODO (S6) : $(PYTHON) -m mlproject.train_optuna --n-trials $(N_TRIALS) --cv $(CV)
 
 mlflow: ## Demarre le serveur MLflow (docker compose)
-	docker compose -f docker-compose.yml up -d mlflow
+	# TODO (S5) : docker compose -f docker-compose.yml up -d mlflow
 
 api: ## Lance l'API FastAPI en rechargement auto (voir API_HOST/API_PORT)
-	$(RUN) uvicorn mlproject.api:app --reload --host $(API_HOST) --port $(API_PORT)
+	# TODO (S12) : $(RUN) uvicorn mlproject.api:app --reload --host $(API_HOST) --port $(API_PORT)
 
 frontend: ## Lance le frontend Streamlit (voir FRONTEND_PORT, API_URL)
-	$(RUN) streamlit run frontend/app.py --server.port $(FRONTEND_PORT)
+	# TODO (S14bis) : $(RUN) streamlit run frontend/app.py --server.port $(FRONTEND_PORT)
 
 
 # ==============================================================================
@@ -129,16 +129,16 @@ frontend: ## Lance le frontend Streamlit (voir FRONTEND_PORT, API_URL)
 # ==============================================================================
 
 docker-build: ## Construit l'image d'entrainement
-	docker build -f docker/Dockerfile.train -t mlproject-train .
+	# TODO (S8) : docker build -f docker/Dockerfile.train -t mlproject-train .
 
 docker-run: ## Lance l'entrainement en conteneur
-	docker run --rm -v "$(CURDIR)/models:/app/models" mlproject-train
+	# TODO (S8) : docker run --rm -v "$(CURDIR)/models:/app/models" mlproject-train
 
 docker-up: ## Demarre la stack (mlflow, api, frontend)
-	docker compose -f docker-compose.yml up -d --build mlflow api frontend
+	# TODO (S14) : docker compose -f docker-compose.yml up -d --build mlflow api frontend
 
 docker-down: ## Arrete et supprime les conteneurs (conserve les volumes)
-	docker compose -f docker-compose.yml down
+	# TODO (S14) : docker compose -f docker-compose.yml down
 
 
 # ==============================================================================
@@ -146,15 +146,15 @@ docker-down: ## Arrete et supprime les conteneurs (conserve les volumes)
 # ==============================================================================
 
 lint: ## Verifie le style (ruff)
-	$(RUN) ruff check mlproject
+	# TODO : $(RUN) ruff check mlproject
 
 format: ## Formate le code (ruff)
-	$(RUN) ruff format mlproject
+	# TODO : $(RUN) ruff format mlproject
 
 type: ## Verifie les types (mypy)
-	$(RUN) mypy mlproject
+	# TODO : $(RUN) mypy mlproject
 
 test: ## Lance les tests (pytest)
-	$(RUN) pytest
+	# TODO : $(RUN) pytest
 
 check: lint type test ## Workflow qualite complet (lint + types + tests)
