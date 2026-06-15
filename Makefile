@@ -1,9 +1,8 @@
 # ==============================================================================
-# Projet de classification - Makefile (squelette)
+# Detection de fraude sur Ethereum - Pipeline MLOps
 # ==============================================================================
-# Seuls les targets d'INSTALLATION sont fournis. Les autres sont a completer
-# au fil des TP (un `# TODO (Sx)` indique la commande attendue).
 # Environnement gere par uv (Python 3.13) a partir de pyproject.toml.
+# Les targets marquees TODO (Sx) seront completees au fil des seances.
 # Aide : make help
 # ==============================================================================
 
