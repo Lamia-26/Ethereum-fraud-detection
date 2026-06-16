@@ -89,3 +89,5 @@ MODEL_NAME = os.getenv("MODEL_NAME", "ethereum-fraud-classifier")
 
 EVAL_ROC_AUC_MIN: float = float(os.getenv("EVAL_ROC_AUC_MIN", "0.80"))
 EVAL_F1_MIN: float = float(os.getenv("EVAL_F1_MIN", "0.70"))
+
+API_URL = os.getenv("API_URL", "http://127.0.0.1:8000")

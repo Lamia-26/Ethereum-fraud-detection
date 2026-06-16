@@ -14,6 +14,8 @@ import mlflow.sklearn
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import ConfusionMatrixDisplay, confusion_matrix, f1_score, roc_auc_score
 from sklearn.pipeline import Pipeline
+import matplotlib.pyplot as plt
+
 
 from ethereum_fraud.config import MODEL_DIR
 from ethereum_fraud.data import load_data, split
@@ -56,7 +58,6 @@ def train(c: float = 1.0, max_iter: int = 1000) -> dict:
         mlflow.sklearn.log_model(model, name="model")
 
         # Matrice de confusion en artefact (S5-7 bonus)
-        import matplotlib.pyplot as plt
         cm = confusion_matrix(y_test, preds)
         fig, ax = plt.subplots(figsize=(5, 5))
         ConfusionMatrixDisplay(cm).plot(ax=ax)
