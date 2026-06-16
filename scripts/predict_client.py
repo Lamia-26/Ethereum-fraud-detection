@@ -9,8 +9,8 @@ Seance 15 - TP Tests de l'API
     quel que soit votre dataset (les colonnes envoyees sont vos features).
 
 Lancement (depuis la racine du projet) :
-    python -m ethereum_fraud.predict_client
-    python -m ethereum_fraud.predict_client --url http://127.0.0.1:8000
+    make predict-client
+    uv run python scripts/predict_client.py --url http://127.0.0.1:8000
 """
 from __future__ import annotations
 

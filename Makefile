@@ -132,7 +132,7 @@ api: ## Lance l'API FastAPI en rechargement auto (voir API_HOST/API_PORT)
 	$(RUN) uvicorn ethereum_fraud.api:app --reload --host $(API_HOST) --port $(API_PORT)
 
 predict-client: ## Envoie 3 exemples du dataset a l'API et affiche les predictions
-	$(PYTHON) -m ethereum_fraud.predict_client
+	$(PYTHON) scripts/predict_client.py
 
 frontend: ## Lance le frontend Streamlit (voir FRONTEND_PORT, API_URL)
 	# TODO (S14bis) : $(RUN) streamlit run frontend/app.py --server.port $(FRONTEND_PORT)
