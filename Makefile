@@ -33,7 +33,7 @@ RESET  := $(shell printf '\033[0m')
 
 .PHONY: help \
         check-uv check-venv venv-create install sync deps-sync lock reset-env doctor \
-        data train train-models train-optuna mlflow-server mlflow api frontend \
+        data train train-models train-optuna mlflow-server mlflow api predict-client frontend \
         docker-build docker-run docker-up docker-down \
         lint format type test check
 
@@ -129,7 +129,10 @@ mlflow: ## Demarre le serveur MLflow (docker compose)
 	# TODO (S5) : docker compose -f docker-compose.yml up -d mlflow
 
 api: ## Lance l'API FastAPI en rechargement auto (voir API_HOST/API_PORT)
-	# TODO (S12) : $(RUN) uvicorn ethereum_fraud.api:app --reload --host $(API_HOST) --port $(API_PORT)
+	$(RUN) uvicorn ethereum_fraud.api:app --reload --host $(API_HOST) --port $(API_PORT)
+
+predict-client: ## Envoie 3 exemples du dataset a l'API et affiche les predictions
+	$(PYTHON) -m ethereum_fraud.predict_client
 
 frontend: ## Lance le frontend Streamlit (voir FRONTEND_PORT, API_URL)
 	# TODO (S14bis) : $(RUN) streamlit run frontend/app.py --server.port $(FRONTEND_PORT)
