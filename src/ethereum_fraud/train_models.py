@@ -37,12 +37,11 @@ from sklearn.pipeline import Pipeline
 from xgboost import XGBClassifier
 
 from ethereum_fraud.config import (
-    MLFLOW_EXPERIMENT,
-    MLFLOW_TRACKING_URI,
     MODEL_DIR,
     MODEL_NAME,
     RANDOM_STATE,
 )
+from ethereum_fraud.tracking import setup_experiment, log_dataset
 from ethereum_fraud.data import load_data, split
 from ethereum_fraud.evaluation import log_shap_summary
 from ethereum_fraud.features import build_preprocessor
@@ -240,11 +239,7 @@ def train_all(
     x_train, x_test, y_train, y_test = split(df)
 
     if use_mlflow:
-        mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
-        mlflow.set_experiment(MLFLOW_EXPERIMENT)
-        logger.info(
-            "Suivi MLflow : %s (experience: %s)", MLFLOW_TRACKING_URI, MLFLOW_EXPERIMENT
-        )
+        setup_experiment()
 
     results = [
         optimize_model(spec, x_train, y_train, x_test, y_test, cv=cv, scoring=scoring)
@@ -257,6 +252,7 @@ def train_all(
 
     if use_mlflow:
         with mlflow.start_run(run_name="compare-models"):
+            log_dataset(df, context="training")
             mlflow.log_param("cv", cv)
             mlflow.log_param("scoring", scoring)
             mlflow.set_tag("best_model", best.name)
