@@ -16,6 +16,7 @@ mlartifacts/
 *.pt
 *.onnx
 optuna.db
+mlflow.db
 
 # Variables d'environnement
 .env
