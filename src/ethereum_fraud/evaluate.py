@@ -15,6 +15,7 @@ Lancement :
     python -m ethereum_fraud.evaluate --model-uri models:/ethereum-fraud-classifier/1
     python -m ethereum_fraud.evaluate --no-validate         # evalue sans porte qualite
 """
+
 from __future__ import annotations
 
 import argparse
@@ -27,7 +28,6 @@ from mlflow.exceptions import MlflowException
 from mlflow.models import MetricThreshold
 
 from ethereum_fraud.config import (
-    DATA_PATH,
     EVAL_F1_MIN,
     EVAL_ROC_AUC_MIN,
     MODEL_NAME,

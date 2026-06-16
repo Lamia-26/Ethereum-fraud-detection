@@ -7,6 +7,7 @@ chaque script d'entrainement, et ajoute la tracabilite des donnees
 Les scripts (train, train_models, train_optuna, evaluate) appellent
 `setup_experiment()` au lieu de repeter `set_tracking_uri` + `set_experiment`.
 """
+
 from __future__ import annotations
 
 import logging
@@ -43,9 +44,8 @@ def setup_experiment() -> None:
         )
     for key, value in MLFLOW_EXPERIMENT_TAGS.items():
         client.set_experiment_tag(experiment.experiment_id, key, value)
-    logger.info(
-        "MLflow : %s  (experience : %s)", MLFLOW_TRACKING_URI, MLFLOW_EXPERIMENT
-    )
+    logger.info("MLflow : %s  (experience : %s)", MLFLOW_TRACKING_URI, MLFLOW_EXPERIMENT)
+
 
 def log_dataset(df: pd.DataFrame, context: str, name: str = "dataset") -> None:
     """Logger un dataset MLflow dans le run courant (tracabilite donnees -> modele).
@@ -59,7 +59,5 @@ def log_dataset(df: pd.DataFrame, context: str, name: str = "dataset") -> None:
     name : str, optional
         Nom logique du dataset, par defaut "dataset".
     """
-    dataset = mlflow.data.from_pandas(
-        df, source=str(DATA_PATH), targets=TARGET, name=name
-    )
+    dataset = mlflow.data.from_pandas(df, source=str(DATA_PATH), targets=TARGET, name=name)  # type: ignore[attr-defined]
     mlflow.log_input(dataset, context=context)

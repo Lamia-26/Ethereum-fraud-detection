@@ -6,6 +6,7 @@ Seance 12 - TP FastAPI
     modele et l'endpoint /predict (voir les TODO S12-n).
     Lancement : `uvicorn mlproject.api:app --reload`
 """
+
 from __future__ import annotations
 
 import logging
@@ -44,12 +45,18 @@ app = FastAPI(title="Ethereum Fraud Detection API", version="1.0.0", lifespan=li
 class Features(BaseModel):
     # Colonnes numériques
     avg_min_between_sent_tnx: Optional[float] = Field(None, alias="Avg min between sent tnx")
-    avg_min_between_received_tnx: Optional[float] = Field(None, alias="Avg min between received tnx")
-    time_diff_first_last: Optional[float] = Field(None, alias="Time Diff between first and last (Mins)")
+    avg_min_between_received_tnx: Optional[float] = Field(
+        None, alias="Avg min between received tnx"
+    )
+    time_diff_first_last: Optional[float] = Field(
+        None, alias="Time Diff between first and last (Mins)"
+    )
     sent_tnx: Optional[float] = Field(None, alias="Sent tnx")
     received_tnx: Optional[float] = Field(None, alias="Received Tnx")
     number_of_created_contracts: Optional[float] = Field(None, alias="Number of Created Contracts")
-    unique_received_from_addresses: Optional[float] = Field(None, alias="Unique Received From Addresses")
+    unique_received_from_addresses: Optional[float] = Field(
+        None, alias="Unique Received From Addresses"
+    )
     unique_sent_to_addresses: Optional[float] = Field(None, alias="Unique Sent To Addresses")
     min_value_received: Optional[float] = Field(None, alias="min value received")
     max_value_received: Optional[float] = Field(None, alias="max value received ")
@@ -60,7 +67,9 @@ class Features(BaseModel):
     min_value_sent_to_contract: Optional[float] = Field(None, alias="min value sent to contract")
     max_val_sent_to_contract: Optional[float] = Field(None, alias="max val sent to contract")
     avg_value_sent_to_contract: Optional[float] = Field(None, alias="avg value sent to contract")
-    total_transactions: Optional[float] = Field(None, alias="total transactions (including tnx to create contract")
+    total_transactions: Optional[float] = Field(
+        None, alias="total transactions (including tnx to create contract"
+    )
     total_ether_sent: Optional[float] = Field(None, alias="total Ether sent")
     total_ether_received: Optional[float] = Field(None, alias="total ether received")
     total_ether_sent_contracts: Optional[float] = Field(None, alias="total ether sent contracts")
@@ -68,15 +77,27 @@ class Features(BaseModel):
     total_erc20_tnxs: Optional[float] = Field(None, alias=" Total ERC20 tnxs")
     erc20_total_ether_received: Optional[float] = Field(None, alias=" ERC20 total Ether received")
     erc20_total_ether_sent: Optional[float] = Field(None, alias=" ERC20 total ether sent")
-    erc20_total_ether_sent_contract: Optional[float] = Field(None, alias=" ERC20 total Ether sent contract")
+    erc20_total_ether_sent_contract: Optional[float] = Field(
+        None, alias=" ERC20 total Ether sent contract"
+    )
     erc20_uniq_sent_addr: Optional[float] = Field(None, alias=" ERC20 uniq sent addr")
     erc20_uniq_rec_addr: Optional[float] = Field(None, alias=" ERC20 uniq rec addr")
     erc20_uniq_sent_addr_1: Optional[float] = Field(None, alias=" ERC20 uniq sent addr.1")
-    erc20_uniq_rec_contract_addr: Optional[float] = Field(None, alias=" ERC20 uniq rec contract addr")
-    erc20_avg_time_between_sent_tnx: Optional[float] = Field(None, alias=" ERC20 avg time between sent tnx")
-    erc20_avg_time_between_rec_tnx: Optional[float] = Field(None, alias=" ERC20 avg time between rec tnx")
-    erc20_avg_time_between_rec_2_tnx: Optional[float] = Field(None, alias=" ERC20 avg time between rec 2 tnx")
-    erc20_avg_time_between_contract_tnx: Optional[float] = Field(None, alias=" ERC20 avg time between contract tnx")
+    erc20_uniq_rec_contract_addr: Optional[float] = Field(
+        None, alias=" ERC20 uniq rec contract addr"
+    )
+    erc20_avg_time_between_sent_tnx: Optional[float] = Field(
+        None, alias=" ERC20 avg time between sent tnx"
+    )
+    erc20_avg_time_between_rec_tnx: Optional[float] = Field(
+        None, alias=" ERC20 avg time between rec tnx"
+    )
+    erc20_avg_time_between_rec_2_tnx: Optional[float] = Field(
+        None, alias=" ERC20 avg time between rec 2 tnx"
+    )
+    erc20_avg_time_between_contract_tnx: Optional[float] = Field(
+        None, alias=" ERC20 avg time between contract tnx"
+    )
     erc20_min_val_rec: Optional[float] = Field(None, alias=" ERC20 min val rec")
     erc20_max_val_rec: Optional[float] = Field(None, alias=" ERC20 max val rec")
     erc20_avg_val_rec: Optional[float] = Field(None, alias=" ERC20 avg val rec")
@@ -88,7 +109,7 @@ class Features(BaseModel):
     erc20_avg_val_sent_contract: Optional[float] = Field(None, alias=" ERC20 avg val sent contract")
     erc20_uniq_sent_token_name: Optional[float] = Field(None, alias=" ERC20 uniq sent token name")
     erc20_uniq_rec_token_name: Optional[float] = Field(None, alias=" ERC20 uniq rec token name")
-    
+
     # Colonnes catégorielles
     erc20_most_sent_token_type: Optional[str] = Field(None, alias=" ERC20 most sent token type")
     erc20_most_rec_token_type: Optional[str] = Field(None, alias=" ERC20_most_rec_token_type")

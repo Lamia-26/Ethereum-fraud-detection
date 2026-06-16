@@ -8,6 +8,7 @@ Lancement :
     python -m ethereum_fraud.train_models --cv 3 --scoring roc_auc
     python -m ethereum_fraud.train_models --no-mlflow
 """
+
 from __future__ import annotations
 
 import argparse
@@ -165,11 +166,13 @@ def log_run_to_mlflow(
         mlflow.log_param("scoring", scoring)
 
         mlflow.log_params(result.best_params)
-        mlflow.log_metrics({
-            f"cv_{scoring}": result.cv_score,
-            "f1": result.f1,
-            "roc_auc": result.roc_auc,
-        })
+        mlflow.log_metrics(
+            {
+                f"cv_{scoring}": result.cv_score,
+                "f1": result.f1,
+                "roc_auc": result.roc_auc,
+            }
+        )
 
         cm = confusion_matrix(y_test, result.preds)
         fig, ax = plt.subplots(figsize=(5, 5))

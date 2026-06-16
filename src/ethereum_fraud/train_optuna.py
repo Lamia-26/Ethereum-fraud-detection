@@ -13,6 +13,7 @@ Lancement :
     python -m ethereum_fraud.train_optuna --n-trials 50 --cv 3
     python -m ethereum_fraud.train_optuna --no-mlflow   # desactive le suivi MLflow
 """
+
 from __future__ import annotations
 
 import argparse
@@ -304,9 +305,7 @@ def optimize(n_trials: int = 30, cv: int = 5, use_mlflow: bool = True) -> list[F
             mlflow.set_tag("best_model", best.spec.name)
             for result in results:
                 register_as = MODEL_NAME if result is best else None
-                log_family_to_mlflow(
-                    result, x_test, y_test, n_trials, cv, register_as=register_as
-                )
+                log_family_to_mlflow(result, x_test, y_test, n_trials, cv, register_as=register_as)
         logger.info("Meilleur modele enregistre dans le registry sous '%s'", MODEL_NAME)
 
     MODEL_DIR.mkdir(parents=True, exist_ok=True)

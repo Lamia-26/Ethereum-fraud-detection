@@ -4,6 +4,7 @@ Seance 5 - TP MLflow Tracking
     Entraine et evalue un modele logistique avec suivi MLflow complet.
     Lancement : python -m ethereum_fraud.train
 """
+
 from __future__ import annotations
 
 import argparse

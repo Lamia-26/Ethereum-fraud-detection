@@ -1,9 +1,10 @@
-﻿"""Configuration centrale du projet de classification.
+"""Configuration centrale du projet de classification.
 
 C'est le SEUL fichier a adapter pour brancher votre propre jeu de donnees :
 data.py, features.py et les scripts d'entrainement lisent toutes leurs
 colonnes via ces constantes. Voir tp/TP_S0_projet_personnel.md.
 """
+
 from __future__ import annotations
 
 import os
