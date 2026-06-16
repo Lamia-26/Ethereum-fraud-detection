@@ -77,4 +77,15 @@ RANDOM_STATE = 42
 # Surcouche via variables d'environnement (principe 12-factor)
 MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI", "http://127.0.0.1:5000")
 MLFLOW_EXPERIMENT = os.getenv("MLFLOW_EXPERIMENT", "ethereum-fraud-detection")
+MLFLOW_EXPERIMENT_DESCRIPTION = os.getenv(
+    "MLFLOW_EXPERIMENT_DESCRIPTION",
+    "Détection de fraude sur les transactions Ethereum (RF / XGBoost / LightGBM).",
+)
+MLFLOW_EXPERIMENT_TAGS: dict[str, str] = {
+    "project": "ethereum-fraud-detection",
+    "team": "ml-ing",
+}
 MODEL_NAME = os.getenv("MODEL_NAME", "ethereum-fraud-classifier")
+
+EVAL_ROC_AUC_MIN: float = float(os.getenv("EVAL_ROC_AUC_MIN", "0.80"))
+EVAL_F1_MIN: float = float(os.getenv("EVAL_F1_MIN", "0.70"))

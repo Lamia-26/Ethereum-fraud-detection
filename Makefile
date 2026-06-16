@@ -33,7 +33,7 @@ RESET  := $(shell printf '\033[0m')
 
 .PHONY: help \
         check-uv check-venv venv-create install sync deps-sync lock reset-env doctor \
-        data train train-models train-optuna mlflow api frontend \
+        data train train-models train-optuna mlflow-server mlflow api frontend \
         docker-build docker-run docker-up docker-down \
         lint format type test check
 
@@ -104,14 +104,26 @@ data: ## Verifie la presence du dataset dans data/
 		&& echo "$(GREEN)[OK] data/transaction_dataset.csv present$(RESET)" \
 		|| { echo "$(RED)[ERREUR] data/transaction_dataset.csv introuvable$(RESET)"; exit 1; }
 
-train: ## Entraine la baseline -> models/model.joblib (C=.. MAX_ITER=..)
+train: data ## Entraine la baseline -> models/model.joblib (C=.. MAX_ITER=..)
 	$(PYTHON) -m ethereum_fraud.train --c $(C) --max-iter $(MAX_ITER)
 
-train-models: ## Compare RF / XGBoost / LightGBM (GridSearchCV) + SHAP (CV=.. SCORING=..)
-    $(PYTHON) -m ethereum_fraud.train_models --cv $(CV) --scoring $(SCORING)
+train-models: data mlflow-server ## Compare RF / XGBoost / LightGBM (GridSearchCV) + SHAP (CV=.. SCORING=..)
+	$(PYTHON) -m ethereum_fraud.train_models --cv $(CV) --scoring $(SCORING)
 
-train-optuna: ## Optimise RF / XGBoost / LightGBM avec Optuna (N_TRIALS=.. CV=..)
-	# TODO (S6) : $(PYTHON) -m ethereum_fraud.train_optuna --n-trials $(N_TRIALS) --cv $(CV)
+train-optuna: data mlflow-server ## Optimise RF / XGBoost / LightGBM avec Optuna (N_TRIALS=.. CV=..)
+	$(PYTHON) -m ethereum_fraud.train_optuna --n-trials $(N_TRIALS) --cv $(CV)
+
+evaluate: data mlflow-server ## Evalue le dernier modele enregistre (VALIDATE=true)
+	$(PYTHON) -m ethereum_fraud.evaluate
+
+mlflow-server: ## Demarre le serveur MLflow local en arriere-plan si pas deja actif
+	@nc -z 127.0.0.1 $(MLFLOW_PORT) 2>/dev/null \
+		&& echo "$(GREEN)[OK] Serveur MLflow deja actif sur http://127.0.0.1:$(MLFLOW_PORT)$(RESET)" \
+		|| ( $(RUN) mlflow server --host 127.0.0.1 --port $(MLFLOW_PORT) \
+		         --backend-store-uri sqlite:///mlflow.db \
+		         --default-artifact-root mlruns > mlflow.log 2>&1 & \
+		     until nc -z 127.0.0.1 $(MLFLOW_PORT) 2>/dev/null; do sleep 1; done && \
+		     echo "$(GREEN)[OK] Serveur MLflow demarre sur http://127.0.0.1:$(MLFLOW_PORT)$(RESET)" )
 
 mlflow: ## Demarre le serveur MLflow (docker compose)
 	# TODO (S5) : docker compose -f docker-compose.yml up -d mlflow
@@ -145,15 +157,15 @@ docker-down: ## Arrete et supprime les conteneurs (conserve les volumes)
 # ==============================================================================
 
 lint: ## Verifie le style (ruff)
-	# TODO : $(RUN) ruff check src/ethereum_fraud
+	$(RUN) ruff check src/ethereum_fraud
 
 format: ## Formate le code (ruff)
-	# TODO : $(RUN) ruff format src/ethereum_fraud
+	$(RUN) ruff format src/ethereum_fraud
 
 type: ## Verifie les types (mypy)
-	# TODO : $(RUN) mypy src/ethereum_fraud
+	$(RUN) mypy src/ethereum_fraud
 
 test: ## Lance les tests (pytest)
-	# TODO : $(RUN) pytest
+	# TODO (S-tests) : $(RUN) pytest
 
 check: lint type test ## Workflow qualite complet (lint + types + tests)
