@@ -55,13 +55,22 @@ services:
       timeout: 5s
       retries: 10
 
-  # frontend:
-  #   build:
-  #     context: .
-  #     dockerfile: docker/Dockerfile.frontend
-  #   TODO (S14-4) : API_URL=http://api:8000
-  #   TODO (S14-5) : ports 8501:8501
-  #   TODO (S14-6) : depends_on api condition service_healthy
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.frontend
+    # S14-4 : URL de l'API et MLflow via les noms de services internes Docker
+    environment:
+      API_URL: http://api:8000
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+      MLFLOW_EXTERNAL_URL: http://localhost:5000
+    # S14-5 : exposition du port 8501
+    ports:
+      - "8501:8501"
+    # S14-6 : attend que l'API soit saine avant de demarrer
+    depends_on:
+      api:
+        condition: service_healthy
 
 volumes:
   mlflow_data:

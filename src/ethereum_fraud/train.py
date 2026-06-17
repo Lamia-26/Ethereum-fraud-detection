@@ -56,7 +56,7 @@ def train(c: float = 1.0, max_iter: int = 1000) -> dict:
         print(f"f1={metrics['f1']:.3f}  roc_auc={metrics['roc_auc']:.3f}")
 
         mlflow.log_metrics(metrics)
-        mlflow.sklearn.log_model(model, name="model")
+        mlflow.sklearn.log_model(model, name="model", skops_trusted_types=["numpy.dtype"])
 
         # Matrice de confusion en artefact (S5-7 bonus)
         cm = confusion_matrix(y_test, preds)

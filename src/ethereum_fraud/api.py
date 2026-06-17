@@ -19,7 +19,7 @@ import pandas as pd
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
-from ethereum_fraud.config import MODEL_DIR
+from ethereum_fraud.config import MODEL_DIR, NUMERIC_FEATURES
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
@@ -144,6 +144,7 @@ def predict(features: Features) -> PredictionOut:
     if model is None:
         raise HTTPException(status_code=503, detail="Modèle non chargé")
     row = pd.DataFrame([features.model_dump(by_alias=True)])
+    row[NUMERIC_FEATURES] = row[NUMERIC_FEATURES].astype(float)
     proba = float(model.predict_proba(row)[0, 1])
     return PredictionOut(prediction=int(proba >= 0.5), probability=round(proba, 4))
 

@@ -11,6 +11,7 @@ Les scripts (train, train_models, train_optuna, evaluate) appellent
 from __future__ import annotations
 
 import logging
+from datetime import datetime
 
 import mlflow
 import mlflow.data
@@ -45,6 +46,47 @@ def setup_experiment() -> None:
     for key, value in MLFLOW_EXPERIMENT_TAGS.items():
         client.set_experiment_tag(experiment.experiment_id, key, value)
     logger.info("MLflow : %s  (experience : %s)", MLFLOW_TRACKING_URI, MLFLOW_EXPERIMENT)
+
+
+def get_latest_metrics() -> dict[str, float]:
+    """Retourne les metriques du dernier run MLflow de l'experience."""
+    mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
+    client = mlflow.MlflowClient()
+    experiment = client.get_experiment_by_name(MLFLOW_EXPERIMENT)
+    if experiment is None:
+        return {}
+    runs = client.search_runs(
+        experiment_ids=[experiment.experiment_id],
+        order_by=["start_time DESC"],
+        max_results=1,
+    )
+    if not runs:
+        return {}
+    return {k: float(v) for k, v in runs[0].data.metrics.items()}
+
+
+def get_all_runs() -> list[dict]:
+    """Retourne tous les runs MLflow de l'experience, du plus recent au plus ancien."""
+    mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
+    client = mlflow.MlflowClient()
+    experiment = client.get_experiment_by_name(MLFLOW_EXPERIMENT)
+    if experiment is None:
+        return []
+    runs = client.search_runs(
+        experiment_ids=[experiment.experiment_id],
+        order_by=["start_time DESC"],
+    )
+    result = []
+    for run in runs:
+        result.append({
+            "run_id": run.info.run_id,
+            "name": run.info.run_name or run.info.run_id[:8],
+            "status": run.info.status,
+            "date": datetime.fromtimestamp(run.info.start_time / 1000).strftime("%Y-%m-%d %H:%M"),
+            "metrics": {k: float(v) for k, v in run.data.metrics.items()},
+            "params": run.data.params,
+        })
+    return result
 
 
 def log_dataset(df: pd.DataFrame, context: str, name: str = "dataset") -> None:

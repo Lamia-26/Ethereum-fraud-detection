@@ -1,5 +1,5 @@
-# Image du frontend Streamlit (fournie : support du TP docker-compose - Seance 14).
-# Build : docker build -f todo/docker/Dockerfile.frontend -t mlproject-frontend .
+# Image du frontend Streamlit.
+# Build : docker build -f docker/Dockerfile.frontend -t mlproject-frontend .
 # Run   : docker run --rm -p 8501:8501 -e API_URL=http://host.docker.internal:8000 mlproject-frontend
 
 FROM python:3.13-slim
@@ -7,9 +7,11 @@ ENV PYTHONUNBUFFERED=1
 WORKDIR /app
 
 COPY pyproject.toml ./
-RUN pip install --no-cache-dir .
+COPY src/ ./src/
 
-COPY todo/frontend/ ./frontend/
+RUN pip install --no-cache-dir -e .
+
+COPY frontend/ ./frontend/
 
 EXPOSE 8501
 CMD ["streamlit", "run", "frontend/app.py", "--server.address", "0.0.0.0", "--server.port", "8501"]
