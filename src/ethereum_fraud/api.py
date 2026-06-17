@@ -37,8 +37,6 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         logger.warning("Modèle introuvable : %s. Lancez d'abord `make train`.", model_path)
     yield
     ml.clear()
-
-
 app = FastAPI(title="Ethereum Fraud Detection API", version="1.0.0", lifespan=lifespan)
 
 

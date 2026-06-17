@@ -1,26 +1,98 @@
+# TP Seance 18 - Integration continue (CI) avec GitHub Actions
+#
+# Placez ce fichier dans .github/workflows/ a la RACINE de votre depot.
+# Votre mission : completer les TODO (S18-n) pour obtenir un pipeline qui, a
+# chaque push et pull request, verifie la qualite du code puis entraine la
+# baseline. Le squelette est fonctionnel : tant qu'un TODO n'est pas fait,
+# l'etape affiche un rappel (echo) au lieu d'executer la vraie commande.
+#
+# Rappels (projet todo, package mlproject) :
+#   uv sync --extra dev          installe le projet + les outils dev
+#   uv run ruff check mlproject  lint
+#   uv run mypy mlproject        types
+#   uv run pytest                tests (issus des seances 11 et 15)
+#   uv run python -m mlproject.train   entrainement de la baseline
 name: CI
 
+# S18-1 : declencher sur push, pull_request et lancement manuel
 on:
   push:
     branches: ["main"]
   pull_request:
     branches: ["main"]
+  workflow_dispatch:
+
+# Annule un run en cours si on repousse sur la meme ref (economise des minutes).
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+# Permissions minimales par defaut.
+permissions:
+  contents: read
 
 jobs:
+  # ---------------------------------------------------------------------------
+  # 1. Qualite : lint (ruff) + types (mypy) + tests (pytest). Le "quality gate".
+  # ---------------------------------------------------------------------------
   quality:
+    name: Qualite (lint + types + tests)
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout du depot
+        uses: actions/checkout@v4
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v5
+      - name: Installation de uv (avec cache)
+        uses: astral-sh/setup-uv@v8.2.0
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
 
-      - name: Install dependencies
+      # S18-2 : installer le projet et les outils dev
+      - name: Installation des dependances (projet + dev)
         run: uv sync --extra dev
 
+      # S18-3 : lint avec ruff
       - name: Lint (ruff)
-        run: make lint
+        run: uv run ruff check src/ethereum_fraud
 
-      - name: Type check (mypy)
-        run: make type
+      # S18-4 : verification des types avec mypy
+      - name: Types (mypy)
+        run: uv run mypy src/ethereum_fraud
+
+      # S18-5 : tests avec pytest
+      - name: Tests (pytest)
+        run: uv run pytest
+
+  # ---------------------------------------------------------------------------
+  # 2. Entrainement : entraine la baseline et publie le modele en artefact
+  #    (illustration du "Continuous Training").
+  # ---------------------------------------------------------------------------
+  train:
+    name: Entrainement (Continuous Training)
+    runs-on: ubuntu-latest
+    # S18-6 : ce job ne s'execute que si quality est vert
+    needs: quality
+    steps:
+      - name: Checkout du depot
+        uses: actions/checkout@v4
+
+      - name: Installation de uv (avec cache)
+        uses: astral-sh/setup-uv@v8.2.0
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+
+      - name: Installation des dependances
+        run: uv sync
+
+      # S18-7 : entrainement de la baseline
+      - name: Donnees + entrainement de la baseline
+        run: uv run python -m ethereum_fraud.train
+
+      # S18-8 : publication du modele en artefact telechargeable
+      - name: Publication du modele en artefact
+        uses: actions/upload-artifact@v4
+        with:
+          name: model
+          path: models/model.joblib
