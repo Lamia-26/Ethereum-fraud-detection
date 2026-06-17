@@ -89,7 +89,7 @@ jobs:
       # S18-7 : entrainement de la baseline
       - name: Donnees + entrainement de la baseline
         env:
-          MLFLOW_TRACKING_URI: file:./mlruns
+          MLFLOW_TRACKING_URI: sqlite:///mlflow.db
         run: uv run python -m ethereum_fraud.train
 
       # S18-8 : publication du modele en artefact telechargeable
