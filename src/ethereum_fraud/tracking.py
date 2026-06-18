@@ -49,7 +49,7 @@ def setup_experiment() -> None:
 
 
 def get_latest_metrics() -> dict[str, float]:
-    """Retourne les metriques du dernier run MLflow de l'experience."""
+    """Retourne les metriques du dernier run MLflow ayant roc_auc (exclut les trial runs)."""
     mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
     client = mlflow.MlflowClient()
     experiment = client.get_experiment_by_name(MLFLOW_EXPERIMENT)
@@ -57,6 +57,7 @@ def get_latest_metrics() -> dict[str, float]:
         return {}
     runs = client.search_runs(
         experiment_ids=[experiment.experiment_id],
+        filter_string="metrics.roc_auc > 0",
         order_by=["start_time DESC"],
         max_results=1,
     )
@@ -66,7 +67,7 @@ def get_latest_metrics() -> dict[str, float]:
 
 
 def get_all_runs() -> list[dict]:
-    """Retourne tous les runs MLflow de l'experience, du plus recent au plus ancien."""
+    """Retourne les runs MLflow avec roc_auc (exclut trial runs et runs sans metriques)."""
     mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
     client = mlflow.MlflowClient()
     experiment = client.get_experiment_by_name(MLFLOW_EXPERIMENT)
@@ -74,6 +75,7 @@ def get_all_runs() -> list[dict]:
         return []
     runs = client.search_runs(
         experiment_ids=[experiment.experiment_id],
+        filter_string="metrics.roc_auc > 0",
         order_by=["start_time DESC"],
     )
     result = []

@@ -217,6 +217,7 @@ def log_family_to_mlflow(
         mlflow.log_params(result.study.best_params)
         mlflow.log_metric("cv_roc_auc", result.study.best_value)
         mlflow.log_metric("test_roc_auc", result.test_roc_auc)
+        mlflow.log_metric("roc_auc", result.test_roc_auc)
 
         cm = confusion_matrix(y_test, result.preds)
         fig, ax = plt.subplots(figsize=(5, 5))
@@ -229,6 +230,7 @@ def log_family_to_mlflow(
         mlflow.log_dict(report_dict, "classification_report.json")
         report_text = cast(str, classification_report(y_test, result.preds))
         mlflow.log_text(report_text, "classification_report.txt")
+        mlflow.log_metric("f1", report_dict["weighted avg"]["f1-score"])
 
         log_shap_summary(result.best_pipeline, x_test, result.spec.name)
 
