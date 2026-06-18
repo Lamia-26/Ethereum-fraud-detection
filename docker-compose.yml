@@ -49,7 +49,7 @@ services:
       - "8000:8000"
     # S14-2 : volume models_data en lecture seule pour lire le modele
     volumes:
-      - models_data:/app/models:ro
+      - models_data:/app/models
     # S14-3 : healthcheck sur GET /health
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://localhost:8000/health')"]
