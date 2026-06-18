@@ -14,13 +14,58 @@ from ethereum_fraud.config import (
     EVAL_ROC_AUC_MIN,
     NUMERIC_FEATURES,
 )
-from ethereum_fraud.tracking import get_all_runs, get_latest_metrics
+from ethereum_fraud.tracking import get_all_runs, get_latest_confusion_matrix, get_latest_metrics
 
 API_URL = os.environ.get("API_URL", "http://127.0.0.1:8000")
 API_EXTERNAL_URL = os.environ.get("API_EXTERNAL_URL", API_URL)
 MLFLOW_EXTERNAL_URL = os.environ.get("MLFLOW_EXTERNAL_URL", "http://localhost:5000")
 
 st.set_page_config(page_title="Ethereum Fraud Detection", layout="wide")
+
+st.markdown("""
+<style>
+/* Header hero */
+.hero {
+    background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 50%, #0EA5E9 100%);
+    padding: 2rem 2.5rem;
+    border-radius: 16px;
+    color: white;
+    margin-bottom: 1.5rem;
+}
+.hero h1 { color: white; margin: 0 0 0.5rem 0; font-size: 2rem; }
+.hero p  { color: #BFDBFE; margin: 0; font-size: 1rem; }
+
+/* Cartes metriques colorees */
+[data-testid="metric-container"] {
+    background: white;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    padding: 1rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+/* Sidebar */
+[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, #1E3A8A 0%, #1E40AF 100%);
+}
+[data-testid="stSidebar"] * { color: white !important; }
+[data-testid="stSidebar"] [data-testid="metric-container"] {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+/* Boutons */
+[data-testid="stButton"] button {
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+/* Tabs */
+[data-testid="stTabs"] button {
+    font-weight: 600;
+}
+</style>
+""", unsafe_allow_html=True)
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -54,6 +99,14 @@ def cached_runs() -> list[dict]:
         return get_all_runs()
     except Exception:
         return []
+
+
+@st.cache_data(ttl=60)
+def cached_confusion_matrix() -> bytes | None:
+    try:
+        return get_latest_confusion_matrix()
+    except Exception:
+        return None
 
 
 # ---------------------------------------------------------------------------
@@ -96,15 +149,13 @@ tab_accueil, tab_predict, tab_experiments, tab_monitoring = st.tabs([
 # ACCUEIL
 # ===========================================================================
 with tab_accueil:
-    st.title("Detection de fraude sur Ethereum")
-    st.markdown(
-        """
-        Ce projet applique un pipeline **MLOps complet** pour detecter automatiquement
-        les transactions frauduleuses sur la blockchain Ethereum.
-        Les transactions sont classifiees en **legitimes** (FLAG=0) ou **frauduleuses** (FLAG=1)
-        a partir de caracteristiques comportementales des portefeuilles.
-        """
-    )
+    st.markdown("""
+    <div class="hero">
+        <h1>Detection de fraude sur Ethereum</h1>
+        <p>Pipeline MLOps complet pour detecter automatiquement les transactions frauduleuses
+        sur la blockchain Ethereum a partir de caracteristiques comportementales des portefeuilles.</p>
+    </div>
+    """, unsafe_allow_html=True)
 
     st.divider()
     st.subheader("Dataset")
@@ -302,6 +353,14 @@ with tab_experiments:
         col2.metric("F1", f"{best['metrics'].get('f1', 0):.4f}")
         col3.metric("ROC-AUC", f"{best['metrics'].get('roc_auc', 0):.4f}")
 
+        st.divider()
+        st.subheader("Matrice de confusion (dernier run)")
+        cm_bytes = cached_confusion_matrix()
+        if cm_bytes:
+            st.image(cm_bytes, width=450)
+        else:
+            st.info("Matrice de confusion non disponible.")
+
 # ===========================================================================
 # MONITORING
 # ===========================================================================
@@ -369,6 +428,16 @@ with tab_monitoring:
     col1.metric("Predictions totales", total)
     col2.metric("Fraudes detectees", fraudes)
     col3.metric("Legitimes", total - fraudes)
+
+    st.divider()
+    st.subheader("Matrice de confusion (dernier run)")
+    cm_bytes = cached_confusion_matrix()
+    if cm_bytes:
+        col1, col2 = st.columns([1, 1])
+        with col1:
+            st.image(cm_bytes, width=400)
+    else:
+        st.info("Matrice de confusion non disponible.")
 
     st.divider()
     st.link_button("Ouvrir MLflow UI", MLFLOW_EXTERNAL_URL, use_container_width=True)

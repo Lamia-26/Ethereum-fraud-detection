@@ -89,6 +89,32 @@ def get_all_runs() -> list[dict]:
     return result
 
 
+def get_latest_confusion_matrix() -> bytes | None:
+    """Telecharge et retourne la matrice de confusion du dernier run en bytes."""
+    import tempfile
+
+    mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
+    client = mlflow.MlflowClient()
+    experiment = client.get_experiment_by_name(MLFLOW_EXPERIMENT)
+    if experiment is None:
+        return None
+    runs = client.search_runs(
+        experiment_ids=[experiment.experiment_id],
+        order_by=["start_time DESC"],
+        max_results=1,
+    )
+    if not runs:
+        return None
+    run_id = runs[0].info.run_id
+    with tempfile.TemporaryDirectory() as tmp:
+        try:
+            path = client.download_artifacts(run_id, "confusion_matrix.png", tmp)
+            with open(path, "rb") as f:
+                return f.read()
+        except Exception:
+            return None
+
+
 def log_dataset(df: pd.DataFrame, context: str, name: str = "dataset") -> None:
     """Logger un dataset MLflow dans le run courant (tracabilite donnees -> modele).
 
