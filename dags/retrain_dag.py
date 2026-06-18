@@ -14,7 +14,7 @@ from airflow.operators.python import PythonOperator
 
 logger = logging.getLogger(__name__)
 
-QUALITY_THRESHOLD = 0.65
+QUALITY_THRESHOLD = 0.80
 
 default_args = {
     "owner": "data-team",
@@ -31,20 +31,21 @@ def task_prepare_data(**context) -> None:
 
 
 def task_train(**context) -> None:
-    from ethereum_fraud.train import train
+    from ethereum_fraud.train_optuna import optimize
 
-    metrics = train()
-    context["ti"].xcom_push(key="f1", value=metrics["f1"])
-    logger.info("Entrainement termine : F1=%.4f  ROC-AUC=%.4f", metrics["f1"], metrics["roc_auc"])
+    results = optimize(n_trials=20, cv=3)
+    best = results[0]
+    context["ti"].xcom_push(key="roc_auc", value=best.test_roc_auc)
+    logger.info("Meilleur modele : %s  test_roc_auc=%.4f", best.spec.name, best.test_roc_auc)
 
 
 def task_check_quality(**context) -> None:
-    f1 = context["ti"].xcom_pull(task_ids="train", key="f1")
-    if f1 is None or f1 < QUALITY_THRESHOLD:
+    roc_auc = context["ti"].xcom_pull(task_ids="train", key="roc_auc")
+    if roc_auc is None or roc_auc < QUALITY_THRESHOLD:
         raise ValueError(
-            f"Qualite insuffisante : F1={f1} < seuil={QUALITY_THRESHOLD}"
+            f"Qualite insuffisante : roc_auc={roc_auc} < seuil={QUALITY_THRESHOLD}"
         )
-    logger.info("Qualite validee : F1=%.4f >= %.2f", f1, QUALITY_THRESHOLD)
+    logger.info("Qualite validee : roc_auc=%.4f >= %.2f", roc_auc, QUALITY_THRESHOLD)
 
 
 with DAG(

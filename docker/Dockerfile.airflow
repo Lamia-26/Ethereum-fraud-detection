@@ -16,4 +16,6 @@ RUN pip install --no-cache-dir \
     xgboost \
     lightgbm \
     matplotlib \
+    optuna \
+    shap \
     python-dotenv
