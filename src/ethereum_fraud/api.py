@@ -27,14 +27,28 @@ logger = logging.getLogger(__name__)
 ml: dict = {}
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+def _load_model() -> None:
     model_path = MODEL_DIR / "model.joblib"
     if model_path.exists():
         ml["model"] = joblib.load(model_path)
+        ml["model_mtime"] = model_path.stat().st_mtime
         logger.info("Modèle chargé depuis %s", model_path)
     else:
         logger.warning("Modèle introuvable : %s. Lancez d'abord `make train`.", model_path)
+
+
+def _reload_if_updated() -> None:
+    model_path = MODEL_DIR / "model.joblib"
+    if model_path.exists():
+        mtime = model_path.stat().st_mtime
+        if mtime != ml.get("model_mtime"):
+            logger.info("Nouveau modèle détecté, rechargement...")
+            _load_model()
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    _load_model()
     yield
     ml.clear()
 app = FastAPI(title="Ethereum Fraud Detection API", version="1.0.0", lifespan=lifespan)
@@ -135,11 +149,13 @@ class PredictionOut(BaseModel):
 
 @app.get("/health")
 def health() -> dict:
+    _reload_if_updated()
     return {"status": "ok", "model_ready": "model" in ml}
 
 
 @app.post("/predict", response_model=PredictionOut)
 def predict(features: Features) -> PredictionOut:
+    _reload_if_updated()
     model = ml.get("model")
     if model is None:
         raise HTTPException(status_code=503, detail="Modèle non chargé")

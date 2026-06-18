@@ -89,6 +89,7 @@ services:
       API_URL: http://api:8000
       MLFLOW_TRACKING_URI: http://mlflow:5000
       PYTHONPATH: /opt/airflow/src
+      MODEL_DIR: /app/models
     ports:
       - "8080:8080"
     volumes:
@@ -96,6 +97,7 @@ services:
       - ./src:/opt/airflow/src
       - ./data:/opt/airflow/data
       - airflow_data:/opt/airflow
+      - models_data:/app/models
     command: >
       bash -c "
         airflow db migrate &&

@@ -16,7 +16,7 @@ ROOT = Path(__file__).resolve().parents[2]
 load_dotenv(ROOT / ".env")
 
 DATA_PATH = ROOT / "data" / "transaction_dataset.csv"
-MODEL_DIR = ROOT / "models"
+MODEL_DIR = Path(os.getenv("MODEL_DIR", str(ROOT / "models")))
 
 TARGET = "FLAG"
 
