@@ -24,6 +24,10 @@ st.set_page_config(page_title="Ethereum Fraud Detection", layout="wide")
 
 st.markdown("""
 <style>
+/* Masquer la barre d'outils Streamlit */
+header[data-testid="stHeader"] { display: none; }
+[data-testid="stSidebar"] > div:first-child { padding-top: 1.5rem; }
+
 /* Header hero */
 .hero {
     background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 50%, #0EA5E9 100%);
