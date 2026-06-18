@@ -145,7 +145,7 @@ if "last_result" not in st.session_state:
 # Sidebar
 # ---------------------------------------------------------------------------
 with st.sidebar:
-    st.markdown("**BENHADDAD Lamia**")
+    st.markdown("# BENHADDAD Lamia")
     st.divider()
     st.markdown("## Navigation")
     health = fetch_health()
