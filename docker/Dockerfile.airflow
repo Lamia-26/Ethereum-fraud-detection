@@ -1,14 +1,19 @@
-# Image Airflow avec le package ethereum_fraud installe.
-# Build : docker compose up -d airflow
+# Image Airflow avec les dependances des DAGs uniquement.
+# On monte src/ via volume + PYTHONPATH pour eviter de reinstaller sqlalchemy.
 
 FROM apache/airflow:2.10.4
 
 USER root
 RUN apt-get update && apt-get install -y --no-install-recommends libgomp1 && rm -rf /var/lib/apt/lists/*
 
-COPY pyproject.toml /opt/ethereum/pyproject.toml
-COPY src/ /opt/ethereum/src/
-RUN chown -R airflow:root /opt/ethereum
-
 USER airflow
-RUN pip install --no-cache-dir -e /opt/ethereum
+RUN pip install --no-cache-dir \
+    httpx \
+    pandas \
+    mlflow \
+    scikit-learn \
+    joblib \
+    xgboost \
+    lightgbm \
+    matplotlib \
+    python-dotenv
