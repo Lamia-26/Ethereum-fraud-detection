@@ -314,11 +314,12 @@ with st.sidebar:
     st.divider()
     st.link_button("🔬 Ouvrir MLflow", MLFLOW_EXTERNAL_URL, use_container_width=True)
     st.link_button("📖 API Documentation", f"{API_EXTERNAL_URL}/docs", use_container_width=True)
+    st.link_button("🐙 GitHub", "https://github.com/Lamia-26/Ethereum-fraud-detection", use_container_width=True)
 
 
 # ── Tabs ──────────────────────────────────────────────────────────────────────
-tab_accueil, tab_predict, tab_experiments, tab_monitoring = st.tabs([
-    "🏠  Accueil", "🔍  Prédiction", "📊  Expériences", "📈  Monitoring",
+tab_accueil, tab_predict, tab_experiments, tab_monitoring, tab_trace = st.tabs([
+    "🏠  Accueil", "🔍  Prédiction", "📊  Expériences", "📈  Monitoring", "📋  Traçabilité",
 ])
 
 
@@ -481,7 +482,8 @@ with tab_predict:
                 "prediction": result["prediction"],
                 "probability": result["probability"],
                 "feedback": None,
-                "timestamp": datetime.now().strftime("%H:%M:%S"),
+                "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "payload": payload,
             }
             st.session_state.history.insert(0, st.session_state.last_result)
         except httpx.HTTPError as exc:
@@ -673,3 +675,61 @@ with tab_monitoring:
 
     st.divider()
     st.link_button("🔬 Ouvrir MLflow UI", MLFLOW_EXTERNAL_URL, use_container_width=True)
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# TRACABILITE
+# ═════════════════════════════════════════════════════════════════════════════
+with tab_trace:
+    st.markdown("## 📋 Traçabilité des prédictions")
+    st.markdown("Journal complet de toutes les prédictions effectuées durant cette session.")
+
+    if not st.session_state.history:
+        st.info("Aucune prédiction effectuée. Allez dans l'onglet **Prédiction** pour commencer.")
+    else:
+        total   = len(st.session_state.history)
+        fraudes = sum(1 for h in st.session_state.history if h["prediction"] == 1)
+        legit   = total - fraudes
+
+        c1, c2, c3 = st.columns(3)
+        c1.metric("Total prédictions", total)
+        c2.metric("🚨 Fraudes détectées", fraudes)
+        c3.metric("✅ Transactions légitimes", legit)
+
+        st.divider()
+        st.markdown('<p class="section-title">📄 Journal des prédictions</p>', unsafe_allow_html=True)
+
+        rows_trace = []
+        for i, h in enumerate(st.session_state.history):
+            p = h.get("payload", {})
+            rows_trace.append({
+                "#": total - i,
+                "Horodatage": h["timestamp"],
+                "Résultat": "🚨 Fraude" if h["prediction"] == 1 else "✅ Légitime",
+                "Probabilité": f"{h['probability']:.1%}",
+                "Sent tnx": p.get("Sent tnx", "—"),
+                "Received Tnx": p.get("Received Tnx", "—"),
+                "Total Ether envoyé": p.get("total Ether sent", "—"),
+                "Total Ether reçu": p.get("total ether received", "—"),
+                "Solde Ether": p.get("total ether balance", "—"),
+                "Contrats créés": p.get("Number of Created Contracts", "—"),
+                "Feedback": h.get("feedback") or "—",
+            })
+
+        df_trace = pd.DataFrame(rows_trace)
+        st.dataframe(df_trace, use_container_width=True, hide_index=True)
+
+        st.divider()
+        csv = df_trace.to_csv(index=False).encode("utf-8")
+        st.download_button(
+            label="⬇️ Exporter en CSV",
+            data=csv,
+            file_name=f"predictions_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+            mime="text/csv",
+            use_container_width=True,
+        )
+
+        if st.button("🗑️ Effacer tout l'historique", use_container_width=True):
+            st.session_state.history = []
+            st.session_state.last_result = None
+            st.rerun()
