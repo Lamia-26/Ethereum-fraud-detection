@@ -44,6 +44,7 @@ services:
       dockerfile: docker/Dockerfile.api
     environment:
       MLFLOW_TRACKING_URI: http://mlflow:5000
+      TZ: Europe/Paris
     # S14-1 : exposition du port 8000
     ports:
       - "8000:8000"
