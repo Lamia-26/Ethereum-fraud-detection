@@ -42,7 +42,7 @@ def task_send_predictions(**context) -> None:
         client.get("/health").raise_for_status()
         for _, row in sample.iterrows():
             payload = json.loads(row.to_json())
-            response = client.post("/predict", json=payload)
+            response = client.post("/predict", json=payload, params={"source": "airflow"})
             response.raise_for_status()
             sent += 1
 

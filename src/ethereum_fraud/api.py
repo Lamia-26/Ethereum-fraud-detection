@@ -9,14 +9,16 @@ Seance 12 - TP FastAPI
 
 from __future__ import annotations
 
+import csv
 import logging
 import os
 from contextlib import asynccontextmanager
+from datetime import datetime
 from typing import AsyncIterator, Optional
 
 import joblib
 import pandas as pd
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel, Field
 
 from ethereum_fraud.config import MODEL_DIR, NUMERIC_FEATURES
@@ -153,8 +155,26 @@ def health() -> dict:
     return {"status": "ok", "model_ready": "model" in ml}
 
 
+PREDICTIONS_LOG = MODEL_DIR / "predictions.csv"
+_CSV_FIELDS = ["timestamp", "source", "prediction", "probability"]
+
+
+def _log_prediction(prediction: int, probability: float, source: str = "manual") -> None:
+    is_new = not PREDICTIONS_LOG.exists()
+    with open(PREDICTIONS_LOG, "a", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=_CSV_FIELDS)
+        if is_new:
+            writer.writeheader()
+        writer.writerow({
+            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "source": source,
+            "prediction": prediction,
+            "probability": probability,
+        })
+
+
 @app.post("/predict", response_model=PredictionOut)
-def predict(features: Features) -> PredictionOut:
+def predict(features: Features, source: str = Query(default="manual")) -> PredictionOut:
     _reload_if_updated()
     model = ml.get("model")
     if model is None:
@@ -162,7 +182,17 @@ def predict(features: Features) -> PredictionOut:
     row = pd.DataFrame([features.model_dump(by_alias=True)])
     row[NUMERIC_FEATURES] = row[NUMERIC_FEATURES].astype(float)
     proba = float(model.predict_proba(row)[0, 1])
-    return PredictionOut(prediction=int(proba >= 0.5), probability=round(proba, 4))
+    pred = int(proba >= 0.5)
+    _log_prediction(pred, round(proba, 4), source)
+    return PredictionOut(prediction=pred, probability=round(proba, 4))
+
+
+@app.get("/predictions")
+def get_predictions(limit: int = Query(default=200)) -> list[dict]:
+    if not PREDICTIONS_LOG.exists():
+        return []
+    df = pd.read_csv(PREDICTIONS_LOG)
+    return df.tail(limit).iloc[::-1].to_dict(orient="records")
 
 
 @app.get("/model-info")

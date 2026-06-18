@@ -195,6 +195,14 @@ def fetch_model_info() -> dict:
         return {}
 
 
+@st.cache_data(ttl=10)
+def fetch_predictions_log() -> list[dict]:
+    try:
+        return httpx.get(f"{API_URL}/predictions", timeout=5.0).json()
+    except Exception:
+        return []
+
+
 @st.cache_data(ttl=60)
 def cached_metrics() -> dict:
     try:
@@ -682,54 +690,48 @@ with tab_monitoring:
 # ═════════════════════════════════════════════════════════════════════════════
 with tab_trace:
     st.markdown("## 📋 Traçabilité des prédictions")
-    st.markdown("Journal complet de toutes les prédictions effectuées durant cette session.")
+    st.markdown("Journal persistant de toutes les prédictions — manuelles et automatiques (Airflow).")
 
-    if not st.session_state.history:
-        st.info("Aucune prédiction effectuée. Allez dans l'onglet **Prédiction** pour commencer.")
+    log = fetch_predictions_log()
+
+    if not log:
+        st.info("Aucune prédiction enregistrée. Effectuez une prédiction ou lancez le DAG Airflow.")
     else:
-        total   = len(st.session_state.history)
-        fraudes = sum(1 for h in st.session_state.history if h["prediction"] == 1)
-        legit   = total - fraudes
+        total   = len(log)
+        fraudes = sum(1 for r in log if r.get("prediction") == 1)
+        airflow_count = sum(1 for r in log if r.get("source") == "airflow")
 
-        c1, c2, c3 = st.columns(3)
+        c1, c2, c3, c4 = st.columns(4)
         c1.metric("Total prédictions", total)
-        c2.metric("🚨 Fraudes détectées", fraudes)
-        c3.metric("✅ Transactions légitimes", legit)
+        c2.metric("🚨 Fraudes", fraudes)
+        c3.metric("✅ Légitimes", total - fraudes)
+        c4.metric("🤖 Via Airflow", airflow_count)
 
         st.divider()
-        st.markdown('<p class="section-title">📄 Journal des prédictions</p>', unsafe_allow_html=True)
+        st.markdown('<p class="section-title">📄 Journal complet</p>', unsafe_allow_html=True)
 
-        rows_trace = []
-        for i, h in enumerate(st.session_state.history):
-            p = h.get("payload", {})
-            rows_trace.append({
-                "#": total - i,
-                "Horodatage": h["timestamp"],
-                "Résultat": "🚨 Fraude" if h["prediction"] == 1 else "✅ Légitime",
-                "Probabilité": f"{h['probability']:.1%}",
-                "Sent tnx": p.get("Sent tnx", "—"),
-                "Received Tnx": p.get("Received Tnx", "—"),
-                "Total Ether envoyé": p.get("total Ether sent", "—"),
-                "Total Ether reçu": p.get("total ether received", "—"),
-                "Solde Ether": p.get("total ether balance", "—"),
-                "Contrats créés": p.get("Number of Created Contracts", "—"),
-                "Feedback": h.get("feedback") or "—",
-            })
-
+        rows_trace = [
+            {
+                "Horodatage": r.get("timestamp", "—"),
+                "Source": "🤖 Airflow" if r.get("source") == "airflow" else "👤 Manuel",
+                "Résultat": "🚨 Fraude" if r.get("prediction") == 1 else "✅ Légitime",
+                "Probabilité": f"{float(r.get('probability', 0)):.1%}",
+            }
+            for r in log
+        ]
         df_trace = pd.DataFrame(rows_trace)
         st.dataframe(df_trace, use_container_width=True, hide_index=True)
 
         st.divider()
-        csv = df_trace.to_csv(index=False).encode("utf-8")
+        csv_bytes = df_trace.to_csv(index=False).encode("utf-8")
         st.download_button(
             label="⬇️ Exporter en CSV",
-            data=csv,
+            data=csv_bytes,
             file_name=f"predictions_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
             mime="text/csv",
             use_container_width=True,
         )
 
-        if st.button("🗑️ Effacer tout l'historique", use_container_width=True):
-            st.session_state.history = []
-            st.session_state.last_result = None
-            st.rerun()
+    if st.button("🔄 Rafraîchir", use_container_width=True):
+        st.cache_data.clear()
+        st.rerun()
