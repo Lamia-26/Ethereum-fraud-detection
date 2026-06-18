@@ -17,6 +17,7 @@ from ethereum_fraud.config import (
 from ethereum_fraud.tracking import get_all_runs, get_latest_metrics
 
 API_URL = os.environ.get("API_URL", "http://127.0.0.1:8000")
+API_EXTERNAL_URL = os.environ.get("API_EXTERNAL_URL", API_URL)
 MLFLOW_EXTERNAL_URL = os.environ.get("MLFLOW_EXTERNAL_URL", "http://localhost:5000")
 
 st.set_page_config(page_title="Ethereum Fraud Detection", layout="wide")
@@ -357,7 +358,8 @@ with tab_monitoring:
     st.subheader("Statut de l'API")
     col1, col2 = st.columns(2)
     col1.metric("Modele charge", "Oui" if model_ready else "Non")
-    col2.metric("URL", API_URL)
+    col2.metric("URL", API_EXTERNAL_URL)
+    st.link_button("Ouvrir l'API (docs)", f"{API_EXTERNAL_URL}/docs", use_container_width=True)
 
     st.divider()
     st.subheader("Statistiques de la session")
