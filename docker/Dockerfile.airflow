@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends libgomp1 && rm 
 
 COPY pyproject.toml /opt/ethereum/pyproject.toml
 COPY src/ /opt/ethereum/src/
-
-RUN pip install --no-cache-dir -e /opt/ethereum
+RUN chown -R airflow:root /opt/ethereum
 
 USER airflow
+RUN pip install --no-cache-dir -e /opt/ethereum
