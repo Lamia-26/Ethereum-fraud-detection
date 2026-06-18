@@ -313,6 +313,7 @@ with st.sidebar:
 
     st.divider()
     st.link_button("🔬 Ouvrir MLflow", MLFLOW_EXTERNAL_URL, use_container_width=True)
+    st.link_button("📖 API Documentation", f"{API_EXTERNAL_URL}/docs", use_container_width=True)
 
 
 # ── Tabs ──────────────────────────────────────────────────────────────────────

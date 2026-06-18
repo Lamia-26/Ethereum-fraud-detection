@@ -151,4 +151,13 @@ def predict(features: Features) -> PredictionOut:
 
 @app.get("/model-info")
 def model_info() -> dict:
-    return {"version": os.environ.get("MODEL_VERSION", "unknown")}
+    try:
+        import mlflow
+        from ethereum_fraud.config import MLFLOW_TRACKING_URI, MODEL_NAME
+        mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
+        client = mlflow.MlflowClient()
+        versions = client.get_latest_versions(MODEL_NAME)
+        version = versions[0].version if versions else os.environ.get("MODEL_VERSION", "unknown")
+    except Exception:
+        version = os.environ.get("MODEL_VERSION", "unknown")
+    return {"version": version}
