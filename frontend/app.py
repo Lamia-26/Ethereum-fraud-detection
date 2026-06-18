@@ -145,6 +145,8 @@ if "last_result" not in st.session_state:
 # Sidebar
 # ---------------------------------------------------------------------------
 with st.sidebar:
+    st.markdown("**BENHADDAD Lamia**")
+    st.divider()
     st.markdown("## Navigation")
     health = fetch_health()
     model_ready = health.get("model_ready", False)
@@ -161,9 +163,6 @@ with st.sidebar:
 
     st.divider()
     st.link_button("Ouvrir MLflow", MLFLOW_EXTERNAL_URL, use_container_width=True)
-    st.divider()
-    st.markdown("**Auteur**")
-    st.markdown("BENHADDAD Lamia")
 
 # ---------------------------------------------------------------------------
 # Onglets
