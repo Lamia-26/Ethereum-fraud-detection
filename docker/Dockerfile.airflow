@@ -1,0 +1,14 @@
+# Image Airflow avec le package ethereum_fraud installe.
+# Build : docker compose up -d airflow
+
+FROM apache/airflow:2.10.4
+
+USER root
+RUN apt-get update && apt-get install -y --no-install-recommends libgomp1 && rm -rf /var/lib/apt/lists/*
+
+COPY pyproject.toml /opt/ethereum/pyproject.toml
+COPY src/ /opt/ethereum/src/
+
+RUN pip install --no-cache-dir -e /opt/ethereum
+
+USER airflow
