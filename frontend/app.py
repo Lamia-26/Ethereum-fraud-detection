@@ -321,6 +321,7 @@ with st.sidebar:
 
     st.divider()
     st.link_button("🔬 Ouvrir MLflow", MLFLOW_EXTERNAL_URL, use_container_width=True)
+    st.link_button("🌀 Ouvrir Airflow", "http://141.253.125.253:8080", use_container_width=True)
     st.link_button("📖 API Documentation", f"{API_EXTERNAL_URL}/docs", use_container_width=True)
     st.link_button("🐙 GitHub", "https://github.com/Lamia-26/Ethereum-fraud-detection", use_container_width=True)
 
