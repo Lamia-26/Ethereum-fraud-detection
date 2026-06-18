@@ -96,7 +96,13 @@ services:
       - ./src:/opt/airflow/src
       - ./data:/opt/airflow/data
       - airflow_data:/opt/airflow
-    command: bash -c "airflow db migrate && airflow standalone"
+    command: >
+      bash -c "
+        airflow db migrate &&
+        airflow users create --username $${_AIRFLOW_WWW_USER_USERNAME} --password $${_AIRFLOW_WWW_USER_PASSWORD} --firstname Admin --lastname Admin --role Admin --email admin@local.com 2>/dev/null || true &&
+        airflow scheduler &
+        airflow webserver --port 8080
+      "
     depends_on:
       api:
         condition: service_healthy
