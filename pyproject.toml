@@ -2,7 +2,7 @@
 name = "mlops-ethereum-fraud-detection"
 version = "0.1.0"
 description = "Detection de fraude sur Ethereum — Pipeline MLOps (ESGI)"
-requires-python = ">=3.13"
+requires-python = ">=3.12"
 dependencies = [
   "scikit-learn>=1.4",
   "pandas>=2.0",
