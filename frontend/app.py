@@ -157,6 +157,9 @@ with st.sidebar:
 
     st.divider()
     st.link_button("Ouvrir MLflow", MLFLOW_EXTERNAL_URL, use_container_width=True)
+    st.divider()
+    st.markdown("**Auteur**")
+    st.markdown("BENHADDAD Lamia")
 
 # ---------------------------------------------------------------------------
 # Onglets
