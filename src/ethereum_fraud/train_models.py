@@ -199,7 +199,9 @@ def log_run_to_mlflow(
                 "numpy.dtype",
                 "xgboost.core.Booster",
                 "xgboost.sklearn.XGBClassifier",
+                "lightgbm.basic.Booster",
                 "lightgbm.sklearn.LGBMClassifier",
+                "collections.OrderedDict",
             ],
         )
 
