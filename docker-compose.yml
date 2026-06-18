@@ -84,8 +84,8 @@ services:
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: sqlite:////opt/airflow/airflow.db
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
       AIRFLOW__WEBSERVER__SECRET_KEY: "ethereum-fraud-mlops-secret"
-      _AIRFLOW_WWW_USER_USERNAME: ${AIRFLOW_USER:-admin}
-      _AIRFLOW_WWW_USER_PASSWORD: ${AIRFLOW_PASSWORD:-admin}
+      _AIRFLOW_WWW_USER_USERNAME: admin
+      _AIRFLOW_WWW_USER_PASSWORD: admin
       API_URL: http://api:8000
       MLFLOW_TRACKING_URI: http://mlflow:5000
       PYTHONPATH: /opt/airflow/src
