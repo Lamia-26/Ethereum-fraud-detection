@@ -14,7 +14,7 @@ from ethereum_fraud.config import (
     EVAL_ROC_AUC_MIN,
     NUMERIC_FEATURES,
 )
-from ethereum_fraud.tracking import get_all_runs, get_latest_confusion_matrix, get_latest_metrics
+from ethereum_fraud.tracking import get_all_runs, get_latest_confusion_matrix, get_latest_metrics, get_latest_shap
 
 API_URL = os.environ.get("API_URL", "http://127.0.0.1:8000")
 API_EXTERNAL_URL = os.environ.get("API_EXTERNAL_URL", API_URL)
@@ -52,6 +52,18 @@ st.markdown("""
 [data-testid="stSidebar"] [data-testid="metric-container"] {
     background: rgba(255,255,255,0.1);
     border: 1px solid rgba(255,255,255,0.2);
+}
+
+/* Boutons sidebar */
+[data-testid="stSidebar"] [data-testid="stLinkButton"] a {
+    background: rgba(255,255,255,0.15) !important;
+    color: white !important;
+    border: 1px solid rgba(255,255,255,0.4) !important;
+    border-radius: 8px;
+    font-weight: 600;
+}
+[data-testid="stSidebar"] [data-testid="stLinkButton"] a:hover {
+    background: rgba(255,255,255,0.25) !important;
 }
 
 /* Boutons */
@@ -109,6 +121,14 @@ def cached_confusion_matrix() -> bytes | None:
         return None
 
 
+@st.cache_data(ttl=60)
+def cached_shap() -> bytes | None:
+    try:
+        return get_latest_shap()
+    except Exception:
+        return None
+
+
 # ---------------------------------------------------------------------------
 # Session state
 # ---------------------------------------------------------------------------
@@ -132,8 +152,8 @@ with st.sidebar:
 
     metrics = cached_metrics()
     if metrics:
-        st.metric("F1 (dernier run)", f"{metrics.get('f1', 0):.3f}")
-        st.metric("ROC-AUC (dernier run)", f"{metrics.get('roc_auc', 0):.3f}")
+        st.metric("F1", f"{metrics.get('f1', 0):.3f}")
+        st.metric("ROC-AUC", f"{metrics.get('roc_auc', 0):.3f}")
 
     st.divider()
     st.link_button("Ouvrir MLflow", MLFLOW_EXTERNAL_URL, use_container_width=True)
@@ -417,8 +437,8 @@ with tab_monitoring:
     st.subheader("Statut de l'API")
     col1, col2 = st.columns(2)
     col1.metric("Modele charge", "Oui" if model_ready else "Non")
-    col2.metric("URL", API_EXTERNAL_URL)
-    st.link_button("Ouvrir l'API (docs)", f"{API_EXTERNAL_URL}/docs", use_container_width=True)
+    with col2:
+        st.link_button("Ouvrir l'API (docs)", f"{API_EXTERNAL_URL}/docs", use_container_width=True)
 
     st.divider()
     st.subheader("Statistiques de la session")
@@ -430,14 +450,22 @@ with tab_monitoring:
     col3.metric("Legitimes", total - fraudes)
 
     st.divider()
-    st.subheader("Matrice de confusion (dernier run)")
-    cm_bytes = cached_confusion_matrix()
-    if cm_bytes:
-        col1, col2 = st.columns([1, 1])
-        with col1:
-            st.image(cm_bytes, width=400)
-    else:
-        st.info("Matrice de confusion non disponible.")
+    st.subheader("Artefacts du dernier run")
+    col_cm, col_shap = st.columns(2)
+    with col_cm:
+        st.markdown("**Matrice de confusion**")
+        cm_bytes = cached_confusion_matrix()
+        if cm_bytes:
+            st.image(cm_bytes)
+        else:
+            st.info("Non disponible.")
+    with col_shap:
+        st.markdown("**Importance des variables (SHAP)**")
+        shap_bytes = cached_shap()
+        if shap_bytes:
+            st.image(shap_bytes)
+        else:
+            st.info("Non disponible — lancez `make train-models` pour generer le SHAP.")
 
     st.divider()
     st.link_button("Ouvrir MLflow UI", MLFLOW_EXTERNAL_URL, use_container_width=True)

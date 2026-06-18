@@ -89,8 +89,8 @@ def get_all_runs() -> list[dict]:
     return result
 
 
-def get_latest_confusion_matrix() -> bytes | None:
-    """Telecharge et retourne la matrice de confusion du dernier run en bytes."""
+def get_latest_artifact(artifact_filename: str) -> bytes | None:
+    """Telecharge et retourne un artefact image du dernier run MLflow en bytes."""
     import tempfile
 
     mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
@@ -108,11 +108,19 @@ def get_latest_confusion_matrix() -> bytes | None:
     run_id = runs[0].info.run_id
     with tempfile.TemporaryDirectory() as tmp:
         try:
-            path = client.download_artifacts(run_id, "confusion_matrix.png", tmp)
+            path = client.download_artifacts(run_id, artifact_filename, tmp)
             with open(path, "rb") as f:
                 return f.read()
         except Exception:
             return None
+
+
+def get_latest_confusion_matrix() -> bytes | None:
+    return get_latest_artifact("confusion_matrix.png")
+
+
+def get_latest_shap() -> bytes | None:
+    return get_latest_artifact("shap_summary.png")
 
 
 def log_dataset(df: pd.DataFrame, context: str, name: str = "dataset") -> None:
